@@ -8,28 +8,57 @@ class MoviesController < ApplicationController
   
     def index
       
-      
       @all_ratings = ['G','PG','PG-13','R']
+      @initial_ratings = {"G"=>1, "PG"=>1, "PG-13"=>1, "R"=>1}
       
+      restfulRelaunch = false
+      
+      #Ratings
       if params[:ratings]
-        @ratings = params[:ratings].keys
+        @ratings = params[:ratings]
+        session[:ratings] = params[:ratings]
       else
-        @ratings = @all_ratings
+        if session[:ratings]
+          @ratings = session[:ratings]
+          restfulRelaunch = true
+        else
+          @ratings = @initial_ratings
+          session[:ratings] = @initial_ratings
+        end
       end
       
-      @movies = Movie.with_ratings(@ratings)
-
-      @check_box_checked = {'G' => false,'PG' => false,'PG-13' => false,'R' => false}
-      for rating in @ratings do
-        @check_box_checked[rating] = true
+      #Sorting By
+      if params[:sortingBy]
+        @sortingBy = params[:sortingBy]
+        session[:sortingBy] = params[:sortingBy]
+      elsif session[:sortingBy]
+        @sortingBy = session[:sortingBy]
+        restfulRelaunch = true
       end
-
-      @movies = @movies.order(params[:sortingBy])
-      if params[:sortingBy] == "title"
+      
+      if @sortingBy == "title"
         @title_class = 'hilite bg-warning'
-      elsif params[:sortingBy] == "release_date"
+      elsif @sortingBy == "release_date"
         @release_date_class = 'hilite bg-warning'
       end
+      
+      #Relaunch with new parameters if needed
+      if restfulRelaunch
+        flash.keep
+        redirect_to movies_path(:ratings => @ratings, :sortingBy => @sortingBy)
+        return
+      end
+      
+      
+      #Set display parameter
+      @movies = Movie.with_ratings(@ratings.keys)
+
+      @check_box_checked = {'G' => false,'PG' => false,'PG-13' => false,'R' => false}
+      for rating in @ratings.keys do
+        @check_box_checked[rating] = true
+      end
+      
+      @movies = @movies.order(@sortingBy)
       
     end
   
