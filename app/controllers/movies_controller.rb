@@ -8,6 +8,12 @@ class MoviesController < ApplicationController
   
     def index
       @movies = Movie.all
+      @movies = @movies.order(params[:sortingBy])
+      if params[:sortingBy] == "title"
+        @title_class = 'hilite bg-warning'
+      elsif params[:sortingBy] == "release_date"
+        @release_date_class = 'hilite bg-warning'
+      end
     end
   
     def new
@@ -44,4 +50,4 @@ class MoviesController < ApplicationController
     def movie_params
       params.require(:movie).permit(:title, :rating, :description, :release_date)
     end
-  end
+end
