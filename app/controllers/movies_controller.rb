@@ -7,13 +7,30 @@ class MoviesController < ApplicationController
     end
   
     def index
-      @movies = Movie.all
+      
+      
+      @all_ratings = ['G','PG','PG-13','R']
+      
+      if params[:ratings]
+        @ratings = params[:ratings].keys
+      else
+        @ratings = @all_ratings
+      end
+      
+      @movies = Movie.with_ratings(@ratings)
+
+      @check_box_checked = {'G' => false,'PG' => false,'PG-13' => false,'R' => false}
+      for rating in @ratings do
+        @check_box_checked[rating] = true
+      end
+
       @movies = @movies.order(params[:sortingBy])
       if params[:sortingBy] == "title"
         @title_class = 'hilite bg-warning'
       elsif params[:sortingBy] == "release_date"
         @release_date_class = 'hilite bg-warning'
       end
+      
     end
   
     def new
